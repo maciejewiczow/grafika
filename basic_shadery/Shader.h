@@ -32,7 +32,7 @@ namespace gl
             ifstream in{ filename };
 
             if (!in)
-                throw shader_exception{ "Source file could not be opened" };
+                throw shader_exception{ "Shader source file could not be opened" };
 
             return Shader{ in, m_type };
         }

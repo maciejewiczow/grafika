@@ -17,8 +17,8 @@ struct Vertex {
     Vec3f color;
 };
 
-constexpr GLfloat pi = 3.141592f;
-constexpr GLfloat twoPi = pi*2;
+constexpr double pi = 3.141592653589793238462643383279502884;
+constexpr double twoPi = pi*2;
 
 Vec3f hsv2rgb(GLfloat h, GLfloat s, GLfloat v) {
     Vec3f result;
@@ -31,7 +31,7 @@ Vec3f hsv2rgb(GLfloat h, GLfloat s, GLfloat v) {
         return result;
     }
 
-    GLfloat hh = fmod(h, twoPi)/(pi/3);
+    GLfloat hh = static_cast<GLfloat>(fmod(h, twoPi)/(pi/3));
 
     long i = (long) hh;
     GLfloat ff = hh - i;
@@ -76,30 +76,44 @@ Vec3f hsv2rgb(GLfloat h, GLfloat s, GLfloat v) {
     return result;
 }
 
-void genShapeData(std::vector<Vertex>& verts, std::vector<GLuint>& indices, std::size_t polygon_vert_count, float radius, Vec3f center_color) {
-    verts.reserve(polygon_vert_count + 1);
-    indices.reserve(polygon_vert_count*3);
-    // the center vertex
-    verts.push_back({ Vec3f{.0f, .0f, .0f}, center_color });
+void genShapeData(std::vector<Vertex>& verts, std::vector<GLuint>& indices, std::size_t polygon_vert_count, std::size_t polygon_vert_max_count, float radius) {
+    verts.reserve(polygon_vert_max_count);
+    indices.reserve(polygon_vert_max_count*3);
 
     GLfloat step = twoPi/polygon_vert_count;
-    for (GLfloat angle = 0; angle < twoPi; angle += step)
+    for (int i = 0; i < polygon_vert_count; i++) {
+        GLfloat angle = step*i;
+
         verts.push_back({
                 Vec3f{radius*cosf(angle), radius*sinf(angle), .0f},
                 hsv2rgb(angle, 1, 1),
             });
-
-    for (GLuint i = 1; i < verts.size()-1; i++) {
-        indices.push_back(i);
-        indices.push_back(i+1);
-        indices.push_back(0); // all triangles contain the center vertex
     }
 
-    // last triangle connects the last vertex with the first outer vertex
-    indices.push_back((GLuint) verts.size() - 1);
-    indices.push_back(1);
-    indices.push_back(0);
+    for (GLuint i = 0; i < polygon_vert_max_count; i++) {
+        indices.push_back(0); // all triangles contain the first vertex
+        indices.push_back(i+1);
+        indices.push_back(i+2);
+    }
 }
+
+void updateShapeVerts(std::vector<Vertex>& verts, std::size_t new_count, float radius) {
+    GLfloat step = twoPi/new_count;
+    for (int i = 0; i < new_count; i++) {
+        GLfloat angle = step*i;
+
+        Vertex vert{
+            Vec3f{radius*cosf(angle), radius*sinf(angle), .0f},
+            hsv2rgb(angle, 1, 1),
+        };
+
+        if (i < verts.size())
+            verts[i] = vert;
+        else
+            verts.push_back(vert);
+    }
+}
+
 
 int main() {
     sf::ContextSettings settings;
@@ -124,14 +138,7 @@ int main() {
     // i skopiowanie do niego danych wierzchołkowych
     GLuint vbo;
     glGenBuffers(1, &vbo);
-
-    std::vector<Vertex> vertices;
-    std::vector<GLuint> indices;
-
-    genShapeData(vertices, indices, 10, .7f, Vec3f{ .5f, .5f, .5f });
-
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
     gl::Shader vertexShader;
     try {
@@ -140,7 +147,7 @@ int main() {
 
         std::cout << "Vertex shader compilation OK\n";
     } catch (gl::shader_exception& e) {
-        std::cerr << "Vertex shader compilation failed!\n" << e.what() << std::endl;
+        std::cerr << "Vertex shader compilation failed:\n" << e.what() << std::endl;
         return 0;
     }
 
@@ -151,7 +158,7 @@ int main() {
 
         std::cout << "Fragment shader compilation OK\n";
     } catch (gl::shader_exception& e) {
-        std::cerr << "Fragment shader compilation failed!\n" << e.what() << std::endl;
+        std::cerr << "Fragment shader compilation failed:\n" << e.what() << std::endl;
         return 0;
     }
 
@@ -175,32 +182,103 @@ int main() {
     GLint timeUnif = glGetUniformLocation(shaderProgram, "time");
     glUniform1f(timeUnif, .0);
 
-    // Rozpoczęcie pętli zdarzeń
+    // application state
     GLfloat time = .0;
+    GLsizei vert_count = 3;
+    int event_count = 0;
+    GLenum primivite = GL_TRIANGLES;
     bool running = true;
+    double prev_y = 0;
+
+    constexpr std::size_t max_verts = 1000;
+
+    std::vector<Vertex> vertices;
+    std::vector<GLuint> indices;
+    GLfloat r = .8f;
+    genShapeData(vertices, indices, vert_count, max_verts, r);
+
+    glBufferData(GL_ARRAY_BUFFER, vertices.capacity()*sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size()*sizeof(Vertex), vertices.data());
+
     while (running) {
-        sf::Event windowEvent;
-        while (window.pollEvent(windowEvent)) {
-            switch (windowEvent.type) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            switch (event.type) {
+            case sf::Event::MouseMoved:
+                if (event.mouseMove.y != prev_y)
+                    event_count++;
+                else
+                    break;
+
+                if (event_count == 10) {
+                    if (event.mouseMove.y > prev_y&& vert_count < max_verts)
+                        vert_count++;
+                    else if (event.mouseMove.y < prev_y && vert_count > 3)
+                        vert_count--;
+
+                    updateShapeVerts(vertices, vert_count, r);
+
+                    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, vert_count*sizeof(Vertex), vertices.data());
+
+                    event_count = 0;
+                    prev_y = event.mouseMove.y;
+                }
+
+                break;
+
             case sf::Event::KeyPressed:
-                if (windowEvent.key.code != sf::Keyboard::Escape)
+                switch (event.key.code) {
+                case sf::Keyboard::Num1:
+                    primivite = GL_POINTS;
+                    break;
+                case sf::Keyboard::Num2:
+                    primivite = GL_LINES;
+                    break;
+                case sf::Keyboard::Num3:
+                    primivite = GL_LINE_STRIP;
+                    break;
+                case sf::Keyboard::Num4:
+                    primivite = GL_LINE_LOOP;
+                    break;
+                case sf::Keyboard::Num5:
+                    primivite = GL_TRIANGLES;
+                    break;
+                case sf::Keyboard::Num6:
+                    primivite = GL_TRIANGLE_STRIP;
+                    break;
+                case sf::Keyboard::Num7:
+                    primivite = GL_TRIANGLE_FAN;
+                    break;
+                case sf::Keyboard::Num8:
+                    primivite = GL_QUADS;
+                    break;
+                case sf::Keyboard::Num9:
+                    primivite = GL_QUAD_STRIP;
+                    break;
+                case sf::Keyboard::Num0:
+                    primivite = GL_POLYGON;
+                    break;
+                };
+
+                if (event.key.code != sf::Keyboard::Escape)
                     break;
             case sf::Event::Closed:
                 running = false;
                 break;
             }
         }
+
         // Nadanie scenie koloru czarnego
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUniform1f(timeUnif, time);
 
-        // Narysowanie trójkąta na podstawie 3 wierzchołków
-        glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, indices.data());
+        glDrawElements(primivite, (GLsizei) (vert_count - 2) * 3, GL_UNSIGNED_INT, indices.data());
         // Wymiana buforów tylni/przedni
         window.display();
-        time += 0.0003f;
+        time += 0.0002f;
     }
     // Kasowanie programu i czyszczenie buforów
     glDeleteProgram(shaderProgram);
