@@ -27,6 +27,19 @@ bld/
 [Oo]bj/
 [Ll]og/
 
+
+# Include library dependencies in repo
+vendor/glew/*
+vendor/SFML/*
+!vendor/**/[Bb]in
+!vendor/**/[Dd]ebug
+!vendor/**/[Rr]elease
+!vendor/**/x64/
+!vendor/**/x86/
+!vendor/**/lib
+!vendor/**/include
+
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
