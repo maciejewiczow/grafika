@@ -38,7 +38,8 @@ vendor/SFML/*
 !vendor/**/x86/
 !vendor/**/lib
 !vendor/**/include
-
+!vendor/glew/src
+!vendor/glew/build
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
