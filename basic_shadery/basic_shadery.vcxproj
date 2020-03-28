@@ -156,7 +156,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="basic_shadery.cpp" />
+    <ClCompile Include="Attribute.cpp" />
+    <ClCompile Include="exceptions.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Program.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="VertexArray.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Attribute.h" />
+    <ClInclude Include="core.h" />
+    <ClInclude Include="exceptions.h" />
+    <ClInclude Include="Program.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="VertexArray.h" />
+    <ClInclude Include="VertexBuffer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="default.frag.glsl" />
+    <None Include="mandelbrot.frag.glsl" />
+    <None Include="default.vert.glsl" />
+    <None Include="radial.frag.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
