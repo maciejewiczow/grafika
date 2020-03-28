@@ -18,7 +18,7 @@ struct Vertex {
 };
 
 constexpr GLfloat pi = 3.141592f;
-constexpr GLfloat twoPi = pi*2;
+constexpr GLfloat twoPi = pi * 2;
 
 Vec3f hsv2rgb(GLfloat h, GLfloat s, GLfloat v) {
     Vec3f result;
@@ -31,7 +31,7 @@ Vec3f hsv2rgb(GLfloat h, GLfloat s, GLfloat v) {
         return result;
     }
 
-    GLfloat hh = fmod(h, twoPi)/(pi/3);
+    GLfloat hh = fmod(h, twoPi) / (pi / 3);
 
     long i = (long) hh;
     GLfloat ff = hh - i;
@@ -76,29 +76,33 @@ Vec3f hsv2rgb(GLfloat h, GLfloat s, GLfloat v) {
     return result;
 }
 
-void genShapeData(std::vector<Vertex>& verts, std::vector<GLuint>& indices, std::size_t polygon_vert_count, float radius, Vec3f center_color) {
+void genShapeData(std::vector<Vertex>& verts, std::vector<GLuint>& indices, std::size_t polygon_vert_count, float radius) {
     verts.reserve(polygon_vert_count + 1);
-    indices.reserve(polygon_vert_count*3);
-    // the center vertex
-    verts.push_back({ Vec3f{.0f, .0f, .0f}, center_color });
+    indices.reserve(polygon_vert_count * 3);
 
-    GLfloat step = twoPi/polygon_vert_count;
-    for (GLfloat angle = 0; angle < twoPi; angle += step)
+    // the center vertex
+    verts.push_back({
+        Vec3f{.0f, .0f, .0f},
+        Vec3f{1.f, 1.f, 1.f},
+        });
+
+    GLfloat step = twoPi / polygon_vert_count;
+    for (int i = 0; i < polygon_vert_count; i++)
         verts.push_back({
-                Vec3f{radius*cosf(angle), radius*sinf(angle), .0f},
-                hsv2rgb(angle, 1, 1),
+            Vec3f{radius * cosf(step * i), radius * sinf(step * i), .0f},
+            hsv2rgb(step * i, 1, 1),
             });
 
-    for (GLuint i = 1; i < verts.size()-1; i++) {
-        indices.push_back(i);
-        indices.push_back(i+1);
+    for (GLuint i = 0; i < verts.size() - 2; i++) {
         indices.push_back(0); // all triangles contain the center vertex
+        indices.push_back(i + 1);
+        indices.push_back(i + 2);
     }
 
     // last triangle connects the last vertex with the first outer vertex
-    indices.push_back((GLuint) verts.size() - 1);
-    indices.push_back(1);
     indices.push_back(0);
+    indices.push_back(1);
+    indices.push_back((GLuint) verts.size() - 1);
 }
 
 int main() {
@@ -128,10 +132,10 @@ int main() {
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
 
-    genShapeData(vertices, indices, 10, .7f, Vec3f{ .5f, .5f, .5f });
+    genShapeData(vertices, indices, 10, .7f);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
     gl::Shader vertexShader;
     try {
@@ -166,11 +170,11 @@ int main() {
     // Specifikacja formatu danych wierzchołkowych
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, sizeof(Vertex::position)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
+    glVertexAttribPointer(posAttrib, sizeof(Vertex::position) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
 
     GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
     glEnableVertexAttribArray(colAttrib);
-    glVertexAttribPointer(colAttrib, sizeof(Vertex::color)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
+    glVertexAttribPointer(colAttrib, sizeof(Vertex::color) / sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
 
     GLint timeUnif = glGetUniformLocation(shaderProgram, "time");
     glUniform1f(timeUnif, .0);
