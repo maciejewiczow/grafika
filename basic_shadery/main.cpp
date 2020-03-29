@@ -1,5 +1,4 @@
-﻿// Nagłówki
-#include <iostream>
+﻿#include <iostream>
 #include <array>
 #include <cmath>
 
