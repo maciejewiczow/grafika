@@ -8,6 +8,8 @@
 
 #include "Shader.h"
 #include "VertexArray.h"
+#include "Program.h"
+#include "Uniform.h"
 
 using Vec3f = sf::Vector3<GLfloat>;
 
@@ -79,7 +81,7 @@ void genShapeData(std::vector<Vertex>& verts, std::vector<GLuint>& indices, std:
     verts.reserve(polygon_vert_max_count);
     indices.reserve(polygon_vert_max_count*3);
 
-    GLfloat step = twoPi/polygon_vert_count;
+    GLfloat step = static_cast<GLfloat>(twoPi)/polygon_vert_count;
     for (int i = 0; i < polygon_vert_count; i++) {
         GLfloat angle = step*i;
 
@@ -97,7 +99,7 @@ void genShapeData(std::vector<Vertex>& verts, std::vector<GLuint>& indices, std:
 }
 
 void updateShapeVerts(std::vector<Vertex>& verts, std::size_t new_count, float radius) {
-    GLfloat step = twoPi/new_count;
+    GLfloat step = static_cast<GLfloat>(twoPi)/new_count;
     for (int i = 0; i < new_count; i++) {
         GLfloat angle = step*i;
 
@@ -162,27 +164,29 @@ int main() {
     }
 
     // Zlinkowanie obu shaderów w jeden wspólny program
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader.m_shaderId);
-    glAttachShader(shaderProgram, fragmentShader.m_shaderId);
-    glBindFragDataLocation(shaderProgram, 0, "outColor");
-    glLinkProgram(shaderProgram);
-    glUseProgram(shaderProgram);
+    gl::Program program;
+    try {
+        program.useShader(vertexShader)
+            .useShader(fragmentShader)
+            .bindFragDataLocation(0, "outColor")
+            .link()
+            .bind();
+    } catch (gl::program_link_exception& e) {
+        std::cerr << "Program linking failed!\n" << e.what() << "\n";
+        return 0;
+    }
 
     // Specifikacja formatu danych wierzchołkowych
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+    GLint posAttrib = program.getAttributeLocation("position");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, sizeof(Vertex::position)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
 
-    GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+    GLint colAttrib = program.getAttributeLocation("color");
     glEnableVertexAttribArray(colAttrib);
     glVertexAttribPointer(colAttrib, sizeof(Vertex::color)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
 
-    GLint timeUnif = glGetUniformLocation(shaderProgram, "time");
-    glUniform1f(timeUnif, .0);
-
     // application state
-    GLfloat time = .0;
+    gl::Uniform<GLfloat> time = program.createUniform<GLfloat>("time", .0f);
     GLsizei vert_count = 3;
     int event_count = 0;
     GLenum primivite = GL_TRIANGLES;
@@ -272,15 +276,12 @@ int main() {
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUniform1f(timeUnif, time);
-
         glDrawElements(primivite, (GLsizei) (vert_count - 2) * 3, GL_UNSIGNED_INT, indices.data());
         // Wymiana buforów tylni/przedni
         window.display();
         time += 0.0002f;
     }
     // Kasowanie programu i czyszczenie buforów
-    glDeleteProgram(shaderProgram);
     glDeleteBuffers(1, &vbo);
 
     // Zamknięcie okna renderingu

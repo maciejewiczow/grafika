@@ -56,6 +56,8 @@ namespace gl
         Shader(ifstream& m_source, ShaderType);
         inline void initShader();
 
+        friend class Program;
+
         string m_source;
         ShaderType m_type;
     public:GLuint m_shaderId;
