@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(LibDir)\glew\include;$(LibDir)\SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LibDir)\glew\include;$(LibDir)\glm;$(LibDir)\SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(LibDir)\glew\lib\$(ConfigurationName)\$(Platform);$(LibDir)\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
