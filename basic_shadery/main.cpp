@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <array>
 #include <cmath>
 
@@ -11,7 +11,7 @@
 #include "Program.h"
 #include "Uniform.h"
 
-using Vec3f = sf::Vector3<GLfloat>;
+using Vec3f = glm::tvec3<GLfloat>;
 
 struct Vertex {
     Vec3f position;
@@ -21,108 +21,21 @@ struct Vertex {
 constexpr double pi = 3.141592653589793238462643383279502884;
 constexpr double twoPi = pi*2;
 
-Vec3f hsv2rgb(GLfloat h, GLfloat s, GLfloat v) {
-    Vec3f result;
-
-    // no saturation means gray
-    if (s <= 0.0) {
-        result.x = v;
-        result.y = v;
-        result.z = v;
-        return result;
-    }
-
-    GLfloat hh = static_cast<GLfloat>(fmod(h, twoPi)/(pi/3));
-
-    long i = (long) hh;
-    GLfloat ff = hh - i;
-    GLfloat p = v * (1.0f - s);
-    GLfloat q = v * (1.0f - (s * ff));
-    GLfloat t = v * (1.0f - (s * (1.0f - ff)));
-
-    switch (i) {
-    case 0:
-        result.x = v;
-        result.y = t;
-        result.z = p;
-        break;
-    case 1:
-        result.x = q;
-        result.y = v;
-        result.z = p;
-        break;
-    case 2:
-        result.x = p;
-        result.y = v;
-        result.z = t;
-        break;
-
-    case 3:
-        result.x = p;
-        result.y = q;
-        result.z = v;
-        break;
-    case 4:
-        result.x = t;
-        result.y = p;
-        result.z = v;
-        break;
-    case 5:
-    default:
-        result.x = v;
-        result.y = p;
-        result.z = q;
-        break;
-    }
-    return result;
+std::ostream& operator<<(std::ostream& out, const glm::vec3& v) {
+    out << "[" << v.x << ", " << v.y << ", " << v.z << "]";
+    return out;
 }
-
-void genShapeData(std::vector<Vertex>& verts, std::vector<GLuint>& indices, std::size_t polygon_vert_count, std::size_t polygon_vert_max_count, float radius) {
-    verts.reserve(polygon_vert_max_count);
-    indices.reserve(polygon_vert_max_count*3);
-
-    GLfloat step = static_cast<GLfloat>(twoPi)/polygon_vert_count;
-    for (int i = 0; i < polygon_vert_count; i++) {
-        GLfloat angle = step*i;
-
-        verts.push_back({
-                Vec3f{radius*cosf(angle), radius*sinf(angle), .0f},
-                hsv2rgb(angle, 1, 1),
-            });
-    }
-
-    for (GLuint i = 0; i < polygon_vert_max_count; i++) {
-        indices.push_back(0); // all triangles contain the first vertex
-        indices.push_back(i+1);
-        indices.push_back(i+2);
-    }
-}
-
-void updateShapeVerts(std::vector<Vertex>& verts, std::size_t new_count, float radius) {
-    GLfloat step = static_cast<GLfloat>(twoPi)/new_count;
-    for (int i = 0; i < new_count; i++) {
-        GLfloat angle = step*i;
-
-        Vertex vert{
-            Vec3f{radius*cosf(angle), radius*sinf(angle), .0f},
-            hsv2rgb(angle, 1, 1),
-        };
-
-        if (i < verts.size())
-            verts[i] = vert;
-        else
-            verts.push_back(vert);
-    }
-}
-
 
 int main() {
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
 
+    glm::tvec2<unsigned int> resolution{ 1300, 900 };
+
     // Okno renderingu
-    sf::Window window(sf::VideoMode(800, 800, 32), "OpenGL", sf::Style::Titlebar | sf::Style::Close, settings);
+    sf::Window window(sf::VideoMode(resolution.x, resolution.y, 32), "OpenGL", sf::Style::Titlebar | sf::Style::Close, settings);
+    window.setVerticalSyncEnabled(true);
 
     // Inicjalizacja GLEW
     glewExperimental = GL_TRUE;
@@ -130,6 +43,8 @@ int main() {
         std::cerr << "GLEW Initalization failed\n";
         return 0;
     }
+
+    glEnable(GL_DEPTH_TEST);
 
     // Utworzenie VAO (Vertex Array Object)
     gl::VertexArray vao;
@@ -164,9 +79,9 @@ int main() {
     }
 
     // Zlinkowanie obu shaderów w jeden wspólny program
-    gl::Program program;
+    gl::Program prog;
     try {
-        program.useShader(vertexShader)
+        prog.useShader(vertexShader)
             .useShader(fragmentShader)
             .bindFragDataLocation(0, "outColor")
             .link()
@@ -177,28 +92,54 @@ int main() {
     }
 
     // Specifikacja formatu danych wierzchołkowych
-    GLint posAttrib = program.getAttributeLocation("position");
+    GLint posAttrib = prog.getAttributeLocation("position");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, sizeof(Vertex::position)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, position));
 
-    GLint colAttrib = program.getAttributeLocation("color");
+    GLint colAttrib = prog.getAttributeLocation("color");
     glEnableVertexAttribArray(colAttrib);
     glVertexAttribPointer(colAttrib, sizeof(Vertex::color)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
 
-    // application state
-    gl::Uniform<GLfloat> time = program.createUniform<GLfloat>("time", .0f);
-    GLsizei vert_count = 3;
-    int event_count = 0;
-    GLenum primivite = GL_TRIANGLES;
-    bool running = true;
-    double prev_y = 0;
+    std::vector<Vertex> vertices{
+        // back quad 
+        {{-1.f,  1.f, -1.f}, { .0f, 1.0f,  .0f}},  // top left
+        {{ 1.f,  1.f, -1.f}, { .0f, 1.0f, 1.0f}},  // top right
+        {{ 1.f, -1.f, -1.f}, { .0f,  .0f, 1.0f}},  // bottom right
+        {{-1.f, -1.f, -1.f}, { .0f,  .0f,  .0f}},  // bottom left
+        // front quad
+        {{-1.f,  1.f,  1.f}, {1.0f, 1.0f,  .0f}},
+        {{ 1.f,  1.f,  1.f}, {1.0f, 1.0f, 1.0f}},
+        {{ 1.f, -1.f,  1.f}, {1.0f,  .0f, 1.0f}},
+        {{-1.f, -1.f,  1.f}, {1.0f,  .0f,  .0f}},
+    };
+    std::vector<GLuint> indices{
+        // back
+        0, 1, 2,
+        0, 2, 3,
+        // front
+        4, 5, 6,
+        4, 6, 7,
+        // left
+        0, 4, 7,
+        0, 3, 7,
+        // right
+        1, 5, 6,
+        1, 2, 6,
+        // top
+        0, 1, 5,
+        0, 4, 5,
+        // bottom
+        2, 3, 7,
+        2, 6, 7,
+    };
 
-    constexpr std::size_t max_verts = 1000;
+    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
-    std::vector<Vertex> vertices;
-    std::vector<GLuint> indices;
-    GLfloat r = .8f;
-    genShapeData(vertices, indices, vert_count, max_verts, r);
+    // uniforms
+    auto model = prog.createUniform<glm::mat4>("model");
+    auto view = prog.createUniform<glm::mat4>("view");
+    auto projection = prog.createUniform<glm::mat4>("projection");
+    auto time = prog.createUniform<GLfloat>("time", .0f);
 
     glBufferData(GL_ARRAY_BUFFER, vertices.capacity()*sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size()*sizeof(Vertex), vertices.data());
@@ -274,9 +215,9 @@ int main() {
 
         // Nadanie scenie koloru czarnego
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawElements(primivite, (GLsizei) (vert_count - 2) * 3, GL_UNSIGNED_INT, indices.data());
+        glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, indices.data());
         // Wymiana buforów tylni/przedni
         window.display();
         time += 0.0002f;
