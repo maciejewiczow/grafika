@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <cmath>
 #include <iomanip>
 
@@ -59,7 +59,7 @@ int main() {
 
     gl::Shader vertexShader;
     try {
-        vertexShader = gl::Shader::fromFile("default.vert.glsl", gl::ShaderType::Vertex);
+        vertexShader = gl::Shader::fromFile("stripes.vert.glsl", gl::ShaderType::Vertex);
         vertexShader.compile();
 
         std::cout << "Vertex shader compilation OK\n";
@@ -70,7 +70,7 @@ int main() {
 
     gl::Shader fragmentShader;
     try {
-        fragmentShader = gl::Shader::fromFile("default.frag.glsl", gl::ShaderType::Fragment);
+        fragmentShader = gl::Shader::fromFile("stripes.frag.glsl", gl::ShaderType::Fragment);
         fragmentShader.compile();
 
         std::cout << "Fragment shader compilation OK\n";
@@ -141,6 +141,7 @@ int main() {
     auto view = prog.createUniform<glm::mat4>("view");
     auto projection = prog.createUniform<glm::mat4>("projection");
     auto time = prog.createUniform<GLfloat>("time", .0f);
+    auto stripesDirection = prog.createUniform<glm::vec3>("stripes_dir", glm::normalize(glm::vec3{ 2.f, -1.f, .0f }));
 
     float scale = .7f;
     model = glm::scale(glm::mat4{ 1.0f }, { 4*scale, scale, scale });
@@ -163,7 +164,7 @@ int main() {
             switch (event.type) {
             case sf::Event::MouseButtonPressed:
                 controlls.toggleMouseCapture();
-                    break;
+                break;
 
             case sf::Event::MouseMoved:
                 if (controlls.isMouseCaptured()) {
