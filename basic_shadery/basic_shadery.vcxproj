@@ -156,7 +156,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Attribute.cpp" />
     <ClCompile Include="exceptions.cpp" />
     <ClCompile Include="FirstPersonControlls.cpp" />
     <ClCompile Include="main.cpp" />
@@ -168,7 +167,6 @@
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Attribute.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraControlls.h" />
     <ClInclude Include="core.h" />
@@ -186,6 +184,8 @@
     <None Include="mandelbrot.frag.glsl" />
     <None Include="default.vert.glsl" />
     <None Include="radial.frag.glsl" />
+    <None Include="stripes.frag.glsl" />
+    <None Include="stripes.vert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
