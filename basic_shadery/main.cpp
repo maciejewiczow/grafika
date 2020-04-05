@@ -1,6 +1,6 @@
 #include <iostream>
-#include <array>
 #include <cmath>
+#include <iomanip>
 
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
@@ -10,6 +10,7 @@
 #include "VertexArray.h"
 #include "Program.h"
 #include "Uniform.h"
+#include "FirstPersonControlls.h"
 
 using Vec3f = glm::tvec3<GLfloat>;
 
@@ -69,7 +70,7 @@ int main() {
 
     gl::Shader fragmentShader;
     try {
-        fragmentShader = gl::Shader::fromFile("radial.frag.glsl", gl::ShaderType::Fragment);
+        fragmentShader = gl::Shader::fromFile("default.frag.glsl", gl::ShaderType::Fragment);
         fragmentShader.compile();
 
         std::cout << "Fragment shader compilation OK\n";
@@ -141,69 +142,42 @@ int main() {
     auto projection = prog.createUniform<glm::mat4>("projection");
     auto time = prog.createUniform<GLfloat>("time", .0f);
 
-    glBufferData(GL_ARRAY_BUFFER, vertices.capacity()*sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size()*sizeof(Vertex), vertices.data());
+    float scale = .7f;
+    model = glm::scale(glm::mat4{ 1.0f }, { 4*scale, scale, scale });
+
+    gl::PerspectiveCamera camera{ (float) pi/3, resolution, 0.05f, 100.0f };
+    camera.setPosition({ .0f, .0f, 3.f });
+
+    gl::FirstPersonControlls controlls{ camera, window };
+    projection = camera.getProjectionMatrix();
+    view = camera.getViewMatrix();
+
+    controlls.setViewUniform(view);
+
+    // application state
+    bool running = true;
 
     while (running) {
         sf::Event event;
         while (window.pollEvent(event)) {
             switch (event.type) {
-            case sf::Event::MouseMoved:
-                if (event.mouseMove.y != prev_y)
-                    event_count++;
-                else
+            case sf::Event::MouseButtonPressed:
+                controlls.toggleMouseCapture();
                     break;
 
-                if (event_count == 10) {
-                    if (event.mouseMove.y > prev_y&& vert_count < max_verts)
-                        vert_count++;
-                    else if (event.mouseMove.y < prev_y && vert_count > 3)
-                        vert_count--;
-
-                    updateShapeVerts(vertices, vert_count, r);
-
-                    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, vert_count*sizeof(Vertex), vertices.data());
-
-                    event_count = 0;
-                    prev_y = event.mouseMove.y;
+            case sf::Event::MouseMoved:
+                if (controlls.isMouseCaptured()) {
+                    std::cout << camera.getPosition() << "\t" << camera.getDirection() << " \t";
+                    std::cout << controlls.m_yaw << "\t" << controlls.m_pitch << "\n";
                 }
 
                 break;
-
             case sf::Event::KeyPressed:
-                switch (event.key.code) {
-                case sf::Keyboard::Num1:
-                    primivite = GL_POINTS;
-                    break;
-                case sf::Keyboard::Num2:
-                    primivite = GL_LINES;
-                    break;
-                case sf::Keyboard::Num3:
-                    primivite = GL_LINE_STRIP;
-                    break;
-                case sf::Keyboard::Num4:
-                    primivite = GL_LINE_LOOP;
-                    break;
-                case sf::Keyboard::Num5:
-                    primivite = GL_TRIANGLES;
-                    break;
-                case sf::Keyboard::Num6:
-                    primivite = GL_TRIANGLE_STRIP;
-                    break;
-                case sf::Keyboard::Num7:
-                    primivite = GL_TRIANGLE_FAN;
-                    break;
-                case sf::Keyboard::Num8:
-                    primivite = GL_QUADS;
-                    break;
-                case sf::Keyboard::Num9:
-                    primivite = GL_QUAD_STRIP;
-                    break;
-                case sf::Keyboard::Num0:
-                    primivite = GL_POLYGON;
-                    break;
-                };
+                if (event.key.code == sf::Keyboard::R)
+                    controlls.lookAt({ .0f, .0f, .0f });
+
+                std::cout << std::fixed << std::setprecision(5);
+                std::cout << camera.getPosition() << "\t" << camera.getDirection() << "\n";
 
                 if (event.key.code != sf::Keyboard::Escape)
                     break;
@@ -212,6 +186,7 @@ int main() {
                 break;
             }
         }
+        controlls.onUpdate();
 
         // Nadanie scenie koloru czarnego
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -220,7 +195,7 @@ int main() {
         glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, indices.data());
         // Wymiana buforów tylni/przedni
         window.display();
-        time += 0.0002f;
+        time += 0.004f;
     }
     // Kasowanie programu i czyszczenie buforów
     glDeleteBuffers(1, &vbo);

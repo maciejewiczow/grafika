@@ -1,7 +1,7 @@
 #version 150 core
 
 in vec3 Color;
-in vec2 pos;
+in vec3 pos;
 out vec4 outColor;
 
 uniform float time;
