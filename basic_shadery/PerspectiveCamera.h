@@ -3,7 +3,7 @@
 
 namespace gl
 {
-    class FirstPersonControlls;
+    class FirstPersonControls;
 
     class PerspectiveCamera : public Camera {
         using super = Camera;
@@ -78,6 +78,6 @@ namespace gl
         glm::vec3 m_direction{ .0f, .0f, -1.0f };
         glm::vec3 m_up{ .0f, 1.0f, .0f };
 
-        friend class FirstPersonControlls;
+        friend class FirstPersonControls;
     };
 }

@@ -3,7 +3,7 @@
 
 #include <SFML/Window.hpp>
 
-#include "CameraControlls.h"
+#include "CameraControls.h"
 #include "PerspectiveCamera.h"
 #include "Uniform.h"
 
@@ -14,10 +14,11 @@
 
 namespace gl
 {
-    class FirstPersonControlls : public CameraControlls {
-        using super = CameraControlls;
+    class FirstPersonControls : public CameraControls {
+        using super = CameraControls;
+
     public:
-        FirstPersonControlls(PerspectiveCamera& cam, sf::Window& win):
+        FirstPersonControls(PerspectiveCamera& cam, sf::Window& win):
             m_camera(cam),
             m_viewport(win),
             m_yaw(atan2(cam.m_direction.x, cam.m_direction.z)),
@@ -49,4 +50,4 @@ namespace gl
         float m_yaw, m_pitch;
         bool m_isMouseCaptured;
     };
-}
+} // namespace gl

@@ -1,41 +1,41 @@
-﻿#include "FirstPersonControlls.h"
+﻿#include "FirstPersonControls.h"
 
-void gl::FirstPersonControlls::onUpdate() {
+void gl::FirstPersonControls::onUpdate() {
     updatePosition();
     updateDirection();
 }
 
-void gl::FirstPersonControlls::lookAt(const glm::vec3& pos) {
+void gl::FirstPersonControls::lookAt(const glm::vec3& pos) {
     m_camera.lookAt(pos);
     if (m_view_unif)
         *m_view_unif = m_camera.m_view;
 }
 
-void gl::FirstPersonControlls::captureMouse() {
+void gl::FirstPersonControls::captureMouse() {
     m_viewport.setMouseCursorVisible(false);
     m_isMouseCaptured = true;
     centerMouse();
 }
 
-void gl::FirstPersonControlls::releaseMouse() {
+void gl::FirstPersonControls::releaseMouse() {
     m_viewport.setMouseCursorVisible(true);
     m_isMouseCaptured = false;
 }
 
-void gl::FirstPersonControlls::toggleMouseCapture() {
+void gl::FirstPersonControls::toggleMouseCapture() {
     if (m_isMouseCaptured)
         releaseMouse();
     else
         captureMouse();
 }
 
-void gl::FirstPersonControlls::centerMouse() {
+void gl::FirstPersonControls::centerMouse() {
     auto size = m_viewport.getSize();
     size /= 2u;
     sf::Mouse::setPosition(static_cast<sf::Vector2i>(size), m_viewport);
 }
 
-inline void gl::FirstPersonControlls::updatePosition() {
+inline void gl::FirstPersonControls::updatePosition() {
     // ignore all keyboard events when window is not focused
     if (m_viewport.getSystemHandle() != GetFocus())
         return;
@@ -51,19 +51,19 @@ inline void gl::FirstPersonControlls::updatePosition() {
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        m_camera.m_position -= glm::cross(m_camera.m_direction, m_camera.m_up)*moveSpeed;
+        m_camera.m_position -= glm::cross(m_camera.m_direction, m_camera.m_up) * moveSpeed;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        m_camera.m_position += glm::cross(m_camera.m_direction, m_camera.m_up)*moveSpeed;
+        m_camera.m_position += glm::cross(m_camera.m_direction, m_camera.m_up) * moveSpeed;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::RShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-        m_camera.m_position -= m_camera.m_up*moveSpeed;
+        m_camera.m_position -= m_camera.m_up * moveSpeed;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-        m_camera.m_position += m_camera.m_up*moveSpeed;
+        m_camera.m_position += m_camera.m_up * moveSpeed;
     }
 
     m_camera.updateViewMatrix();
@@ -71,17 +71,18 @@ inline void gl::FirstPersonControlls::updatePosition() {
         *m_view_unif = m_camera.m_view;
 }
 
-void gl::FirstPersonControlls::updateDirection() {
+void gl::FirstPersonControls::updateDirection() {
     if (!m_isMouseCaptured)
         return;
 
     auto mousePos = sf::Mouse::getPosition(m_viewport);
-    auto center = static_cast<sf::Vector2i>(m_viewport.getSize())/2;
+    auto center = static_cast<sf::Vector2i>(m_viewport.getSize()) / 2;
 
     int xoffset = mousePos.x - center.x;
     int yoffset = center.y - mousePos.y; // reversed since y-coordinates go from bottom to top
 
-    if (xoffset == 0 || yoffset == 0) return;
+    if (xoffset == 0 || yoffset == 0)
+        return;
 
     centerMouse();
 

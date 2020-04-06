@@ -30,7 +30,7 @@
     <ClCompile Include="Uniform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FirstPersonControlls.cpp">
+    <ClCompile Include="FirstPersonControls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -62,10 +62,10 @@
     <ClInclude Include="PerspectiveCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FirstPersonControlls.h">
+    <ClInclude Include="FirstPersonControls.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CameraControlls.h">
+    <ClInclude Include="CameraControls.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

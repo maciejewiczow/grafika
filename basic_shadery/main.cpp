@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <cmath>
 #include <iomanip>
 
@@ -10,7 +10,7 @@
 #include "VertexArray.h"
 #include "Program.h"
 #include "Uniform.h"
-#include "FirstPersonControlls.h"
+#include "FirstPersonControls.h"
 
 using Vec3f = glm::tvec3<GLfloat>;
 
@@ -102,7 +102,7 @@ int main() {
     glVertexAttribPointer(colAttrib, sizeof(Vertex::color)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
 
     std::vector<Vertex> vertices{
-        // back quad 
+        // back quad
         {{-1.f,  1.f, -1.f}, { .0f, 1.0f,  .0f}},  // top left
         {{ 1.f,  1.f, -1.f}, { .0f, 1.0f, 1.0f}},  // top right
         {{ 1.f, -1.f, -1.f}, { .0f,  .0f, 1.0f}},  // bottom right
@@ -150,11 +150,11 @@ int main() {
     camera.setPosition({ -13.f, 15.f, -12.f });
     camera.lookAt({ .0f, .0f, .0f });
 
-    gl::FirstPersonControlls controlls{ camera, window };
+    gl::FirstPersonControls controls{ camera, window };
     projection = camera.getProjectionMatrix();
     view = camera.getViewMatrix();
 
-    controlls.setViewUniform(view);
+    controls.setViewUniform(view);
 
     // application state
     bool running = true;
@@ -165,27 +165,27 @@ int main() {
         while (window.pollEvent(event)) {
             switch (event.type) {
             case sf::Event::MouseButtonPressed:
-                controlls.toggleMouseCapture();
+                controls.toggleMouseCapture();
                 break;
 
             case sf::Event::MouseMoved:
-                if (controlls.isMouseCaptured())
+                if (controls.isMouseCaptured())
                     std::cout << camera.getPosition() << "\t" << camera.getDirection() << " \n";
                 break;
 
             case sf::Event::LostFocus:
-                mouseCapturedBeforeBlur = controlls.isMouseCaptured();
-                controlls.releaseMouse();
+                mouseCapturedBeforeBlur = controls.isMouseCaptured();
+                controls.releaseMouse();
                 break;
 
             case sf::Event::GainedFocus:
                 if (mouseCapturedBeforeBlur)
-                    controlls.captureMouse();
+                    controls.captureMouse();
                 break;
 
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::R)
-                    controlls.lookAt({ .0f, .0f, .0f });
+                    controls.lookAt({ .0f, .0f, .0f });
 
                 std::cout << std::fixed << std::setprecision(5);
                 std::cout << camera.getPosition() << "\t" << camera.getDirection() << "\n";
@@ -197,7 +197,7 @@ int main() {
                 break;
             }
         }
-        controlls.onUpdate();
+        controls.onUpdate();
 
         // Nadanie scenie koloru czarnego
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);

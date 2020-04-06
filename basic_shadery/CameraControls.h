@@ -7,9 +7,9 @@ namespace gl
     template<typename>
     class Uniform;
 
-    class CameraControlls {
+    class CameraControls {
     public:
-        CameraControlls(): m_view_unif(nullptr), m_perojection_unif(nullptr) {}
+        CameraControls(): m_view_unif(nullptr), m_perojection_unif(nullptr) {}
 
         virtual void onUpdate() = 0;
         void setViewUniform(gl::Uniform<glm::mat4>& unif) { m_view_unif = &unif; }
