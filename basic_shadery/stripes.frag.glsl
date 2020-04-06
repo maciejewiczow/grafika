@@ -8,8 +8,6 @@ uniform mat4 model;
 uniform vec3 stripes_dir;
 uniform float time;
 
-#define PI 3.151492
-
 float map(float x, float min_s, float max_s, float min_d, float max_d) {
     return ((x - min_s)/(max_s - min_s))*(max_d - min_d) + min_d;
 }

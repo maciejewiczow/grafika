@@ -8,12 +8,8 @@ namespace gl
     class PerspectiveCamera : public Camera {
         using super = Camera;
     public:
-        using super::getPosition;
-        using super::getProjectionMatrix;
-        using super::getViewMatrix;
-        using super::setPosition;
-
         PerspectiveCamera(float fov, float aspect, float near, float far):
+            super(),
             m_fov(fov),
             m_aspect(aspect),
             m_near(near),
@@ -24,6 +20,7 @@ namespace gl
         }
 
         PerspectiveCamera(float fov, const glm::tvec2<unsigned>& res, float near, float far):
+            super(),
             m_fov(fov),
             m_aspect((float) res.x/res.y),
             m_near(near),
@@ -73,7 +70,7 @@ namespace gl
             m_view = glm::lookAt(m_position, m_position + m_direction, m_up);
         };
 
-        void updateProjectionMatrix() {
+        virtual void updateProjectionMatrix() override {
             m_projection = glm::perspective(m_fov, m_aspect, m_near, m_far);
         }
 

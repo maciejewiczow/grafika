@@ -18,11 +18,12 @@ namespace gl
 
     protected:
         virtual void updateViewMatrix() = 0;
+        virtual void updateProjectionMatrix() = 0;
 
         Camera():
             m_position{ .0f, .0f, .0f },
-            m_view{ glm::mat4{1.f} },
-            m_projection{ glm::mat4{1.f} }
+            m_view{ 1.f },
+            m_projection{ 1.f }
         {}
 
         glm::vec3 m_position;
