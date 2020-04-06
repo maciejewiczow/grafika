@@ -43,7 +43,6 @@ namespace gl
         float moveSpeed = 0.1f;
         float lookSpeed = 0.15f;
 
-        float m_yaw, m_pitch;
     private:
         inline void centerMouse();
         inline void updatePosition();
@@ -52,7 +51,7 @@ namespace gl
         PerspectiveCamera& m_camera;
         sf::Window& m_viewport;
 
-
+        float m_yaw, m_pitch;
         bool m_isMouseCaptured;
 
         gl::Uniform<glm::mat4>* m_view_unif;

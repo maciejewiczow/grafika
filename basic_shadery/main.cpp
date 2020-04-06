@@ -141,13 +141,14 @@ int main() {
     auto view = prog.createUniform<glm::mat4>("view");
     auto projection = prog.createUniform<glm::mat4>("projection");
     auto time = prog.createUniform<GLfloat>("time", .0f);
-    auto stripesDirection = prog.createUniform<glm::vec3>("stripes_dir", glm::normalize(glm::vec3{ 2.f, -1.f, .0f }));
+    auto stripesDirection = prog.createUniform<glm::vec3>("stripes_dir", glm::normalize(glm::vec3{ 2.f, -1.f, 1.5f }));
 
-    float scale = .7f;
-    model = glm::scale(glm::mat4{ 1.0f }, { 4*scale, scale, scale });
+    float scale = 5.f;
+    model = glm::scale(glm::mat4{ 1.0f }, { scale, scale, scale });
 
     gl::PerspectiveCamera camera{ (float) pi/3, resolution, 0.05f, 100.0f };
-    camera.setPosition({ .0f, .0f, 3.f });
+    camera.setPosition({ -13.f, 15.f, -12.f });
+    camera.lookAt({ .0f, .0f, .0f });
 
     gl::FirstPersonControlls controlls{ camera, window };
     projection = camera.getProjectionMatrix();
@@ -157,6 +158,7 @@ int main() {
 
     // application state
     bool running = true;
+    bool mouseCapturedBeforeBlur = false;
 
     while (running) {
         sf::Event event;
@@ -167,12 +169,20 @@ int main() {
                 break;
 
             case sf::Event::MouseMoved:
-                if (controlls.isMouseCaptured()) {
-                    std::cout << camera.getPosition() << "\t" << camera.getDirection() << " \t";
-                    std::cout << controlls.m_yaw << "\t" << controlls.m_pitch << "\n";
-                }
-
+                if (controlls.isMouseCaptured())
+                    std::cout << camera.getPosition() << "\t" << camera.getDirection() << " \n";
                 break;
+
+            case sf::Event::LostFocus:
+                mouseCapturedBeforeBlur = controlls.isMouseCaptured();
+                controlls.releaseMouse();
+                break;
+
+            case sf::Event::GainedFocus:
+                if (mouseCapturedBeforeBlur)
+                    controlls.captureMouse();
+                break;
+
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::R)
                     controlls.lookAt({ .0f, .0f, .0f });

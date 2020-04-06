@@ -14,17 +14,23 @@ float map(float x, float min_s, float max_s, float min_d, float max_d) {
     return ((x - min_s)/(max_s - min_s))*(max_d - min_d) + min_d;
 }
 
-void main()
-{
-    vec4 worldStripesDir = model*vec4(stripes_dir,0);
+float h(float x, float period, float peakToValleyRatio) {
+    x = mod(x, period);
+    
+    if (x <= (1- peakToValleyRatio)*period) 
+        return 0;
+    else 
+        return x;
+}
+
+void main() {
+    vec4 worldStripesDir = model*vec4(stripes_dir, 0);
     float f = dot(pos, worldStripesDir.xyz);
     
     f += time;
 
-    f = map(cos(10*f), -1, 1, 0, 1);
+    f = clamp(8*h(f, 1., 0.1) , 0, 10);
+    f = map(f, 0, 10, 0.06, 1);
 
-   // f = clamp(cos(f * PI * 4.5)*2 + map(cos(time*1.4), -1, 1, -1.5, 2.45), 0, 1);
-   //
-   // f *= sin(length(pos) - .1);
 	outColor = vec4(Color * f, 1.0f);
 }
