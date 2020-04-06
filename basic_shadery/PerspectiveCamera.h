@@ -52,6 +52,11 @@ namespace gl
             setAspect((float) res.x/res.y);
         }
 
+        void lookAt(const glm::vec3& target) {
+            m_direction = glm::normalize(target - m_position);
+            updateViewMatrix();
+        }
+
         void setProjection(float fov, float aspect, float near, float far) {
             m_fov = fov;
             m_near = near;

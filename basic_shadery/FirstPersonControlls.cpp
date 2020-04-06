@@ -6,8 +6,7 @@ void gl::FirstPersonControlls::onUpdate() {
 }
 
 void gl::FirstPersonControlls::lookAt(const glm::vec3& pos) {
-    m_camera.m_direction = glm::normalize(pos - m_camera.m_position);
-    m_camera.updateViewMatrix();
+    m_camera.lookAt(pos);
     if (m_view_unif)
         *m_view_unif = m_camera.m_view;
 }
