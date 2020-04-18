@@ -7,11 +7,6 @@
 #include "PerspectiveCamera.h"
 #include "Uniform.h"
 
-#include <Windows.h>
-// because windows contains stupid defines
-#undef near
-#undef far
-
 namespace gl
 {
     class FirstPersonControls : public CameraControls {
@@ -27,7 +22,7 @@ namespace gl
             captureMouse();
         }
 
-        virtual void onUpdate() override;
+        virtual void onUpdate(float timeStep) override;
 
         void lookAt(const glm::vec3& pos);
 
@@ -36,13 +31,13 @@ namespace gl
         void toggleMouseCapture();
         bool isMouseCaptured() const { return m_isMouseCaptured; }
 
-        float moveSpeed = 0.1f;
-        float lookSpeed = 0.15f;
+        float moveSpeed = 0.000015f;
+        float lookSpeed = 0.000015f;
 
     private:
         inline void centerMouse();
-        inline void updatePosition();
-        inline void updateDirection();
+        inline void updatePosition(float timeStep);
+        inline void updateDirection(float timeStep);
 
         PerspectiveCamera& m_camera;
         sf::Window& m_viewport;

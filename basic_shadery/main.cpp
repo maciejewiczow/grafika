@@ -176,21 +176,6 @@ int main() {
                 controls.toggleMouseCapture();
                 break;
 
-            case sf::Event::MouseMoved:
-                if (controls.isMouseCaptured())
-                    std::cout << camera.getPosition() << "\t" << camera.getDirection() << " \n";
-                break;
-
-            case sf::Event::LostFocus:
-                mouseCapturedBeforeBlur = controls.isMouseCaptured();
-                controls.releaseMouse();
-                break;
-
-            case sf::Event::GainedFocus:
-                if (mouseCapturedBeforeBlur)
-                    controls.captureMouse();
-                break;
-
             case sf::Event::KeyPressed:
                 if (event.key.code == sf::Keyboard::R)
                     controls.lookAt({ .0f, .0f, .0f });
@@ -202,7 +187,7 @@ int main() {
                 break;
             }
         }
-        controls.onUpdate();
+        controls.onUpdate(static_cast<float>(timeStep.asMicroseconds()));
 
         // Nadanie scenie koloru czarnego
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -221,7 +206,7 @@ int main() {
             title += "us/frame)";
             window.setTitle(title);
         }
-        time += 0.004f;
+        time += 0.0000004f * stepUs;
     }
     // Kasowanie programu i czyszczenie buforów
     glDeleteBuffers(1, &vbo);

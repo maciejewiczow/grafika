@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Camera.h"
 
@@ -11,7 +11,7 @@ namespace gl
     public:
         CameraControls(): m_view_unif(nullptr), m_projection_unif(nullptr) {}
 
-        virtual void onUpdate() = 0;
+        virtual void onUpdate(float timeStep) = 0;
         void setViewUniform(gl::Uniform<glm::mat4>& unif) { m_view_unif = &unif; }
         void setProjectionUniform(gl::Uniform<glm::mat4>& unif) { m_projection_unif = &unif; }
 
