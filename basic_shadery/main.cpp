@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
+#include <string>
 
 #include <GL/glew.h>
 #include <SFML/Window.hpp>
@@ -36,7 +37,8 @@ int main() {
 
     // Okno renderingu
     sf::Window window(sf::VideoMode(resolution.x, resolution.y, 32), "OpenGL", sf::Style::Titlebar | sf::Style::Close, settings);
-    window.setVerticalSyncEnabled(true);
+    //window.setVerticalSyncEnabled(true);
+    window.setFramerateLimit(55);
 
     // Inicjalizacja GLEW
     glewExperimental = GL_TRUE;
@@ -158,9 +160,15 @@ int main() {
 
     // application state
     bool running = true;
-    bool mouseCapturedBeforeBlur = false;
+    sf::Clock clock;
+    sf::Time timeStep;
+
+    const char* titleBase = "OpenGL - ";
 
     while (running) {
+        timeStep = clock.getElapsedTime();
+        clock.restart();
+
         sf::Event event;
         while (window.pollEvent(event)) {
             switch (event.type) {
@@ -187,9 +195,6 @@ int main() {
                 if (event.key.code == sf::Keyboard::R)
                     controls.lookAt({ .0f, .0f, .0f });
 
-                std::cout << std::fixed << std::setprecision(5);
-                std::cout << camera.getPosition() << "\t" << camera.getDirection() << "\n";
-
                 if (event.key.code != sf::Keyboard::Escape)
                     break;
             case sf::Event::Closed:
@@ -203,9 +208,19 @@ int main() {
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawElements(GL_TRIANGLES, (GLsizei) indices.size(), GL_UNSIGNED_INT, indices.data());
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, indices.data());
         // Wymiana buforów tylni/przedni
         window.display();
+
+        auto stepUs = timeStep.asMicroseconds();
+        if (stepUs > 0) {
+            std::string title{ titleBase };
+            title += std::to_string(1000000/stepUs);
+            title += " FPS (";
+            title += std::to_string(stepUs);
+            title += "us/frame)";
+            window.setTitle(title);
+        }
         time += 0.004f;
     }
     // Kasowanie programu i czyszczenie buforów
