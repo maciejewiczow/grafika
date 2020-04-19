@@ -1,6 +1,6 @@
 ﻿#include "FirstPersonControls.h"
 
-void gl::FirstPersonControls::onUpdate(float timeStep) {
+void gl::FirstPersonControls::update(float timeStep) {
     // do not update controls when window is in background
     if (!m_viewport.hasFocus()) return;
 

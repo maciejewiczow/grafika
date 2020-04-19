@@ -22,7 +22,7 @@ namespace gl
             captureMouse();
         }
 
-        virtual void onUpdate(float timeStep) override;
+        virtual void update(float timeStep) override;
 
         void lookAt(const glm::vec3& pos);
 

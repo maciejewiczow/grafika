@@ -187,7 +187,7 @@ int main() {
                 break;
             }
         }
-        controls.onUpdate(static_cast<float>(timeStep.asMicroseconds()));
+        controls.update(static_cast<float>(timeStep.asMicroseconds()));
 
         // Nadanie scenie koloru czarnego
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
