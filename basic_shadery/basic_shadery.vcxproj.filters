@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -70,22 +70,28 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="mandelbrot.frag.glsl">
+    <None Include="assets\shaders\default.frag.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="default.frag.glsl">
+    <None Include="assets\shaders\default.vert.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="default.vert.glsl">
+    <None Include="assets\shaders\mandelbrot.frag.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="radial.frag.glsl">
+    <None Include="assets\shaders\radial.frag.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="stripes.frag.glsl">
+    <None Include="assets\shaders\stripes.frag.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="stripes.vert.glsl">
+    <None Include="assets\shaders\stripes.vert.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\textured.frag.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\textured.vert.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

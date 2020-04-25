@@ -176,12 +176,15 @@
     <ClInclude Include="VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="default.frag.glsl" />
-    <None Include="mandelbrot.frag.glsl" />
-    <None Include="default.vert.glsl" />
-    <None Include="radial.frag.glsl" />
-    <None Include="stripes.frag.glsl" />
-    <None Include="stripes.vert.glsl" />
+    <None Include="assets\shaders\default.frag.glsl" />
+    <None Include="assets\shaders\mandelbrot.frag.glsl" />
+    <None Include="assets\shaders\default.vert.glsl" />
+    <None Include="assets\shaders\radial.frag.glsl" />
+    <None Include="assets\shaders\stripes.frag.glsl" />
+    <None Include="assets\shaders\stripes.vert.glsl" />
+    <None Include="assets\shaders\textured.frag.glsl" />
+    <None Include="assets\shaders\textured.vert.glsl" />
+  </ItemGroup>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
