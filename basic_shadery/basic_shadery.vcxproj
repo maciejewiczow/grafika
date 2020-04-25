@@ -185,6 +185,8 @@
     <None Include="assets\shaders\textured.frag.glsl" />
     <None Include="assets\shaders\textured.vert.glsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\textures\korwinium.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
