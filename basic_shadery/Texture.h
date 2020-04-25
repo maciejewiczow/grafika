@@ -76,7 +76,7 @@ namespace gl
             std::swap(data, other.data);
         }
 
-        Texture& operator=(Texture& other) noexcept {
+        Texture& operator=(Texture&& other) noexcept {
             if (this != &other) {
                 m_texId = std::exchange(other.m_texId, 0);
                 data = std::exchange(other.data, nullptr);
