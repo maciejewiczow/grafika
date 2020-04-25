@@ -15,25 +15,28 @@ namespace gl
 
     template<typename T>
     class Uniform {
-    public:
-        Uniform(const Program& prog, const char* name): m_prog(&prog), m_value(), m_uId(0) {
-            m_uId = glGetUniformLocation(m_prog->m_programId, name);
+        friend class Program;
+
+        Uniform(const Program& prog, const char* name): m_prog(&prog), m_value(), m_uniformId(0) {
+            m_uniformId = glGetUniformLocation(m_prog->m_programId, name);
         }
-        Uniform(const Program& prog, const char* name, const T& value): m_prog(&prog), m_value(value), m_uId(0) {
-            m_uId = glGetUniformLocation(m_prog->m_programId, name);
+
+        Uniform(const Program& prog, const char* name, const T& value): m_prog(&prog), m_value(value), m_uniformId(0) {
+            m_uniformId = glGetUniformLocation(m_prog->m_programId, name);
             update();
         }
 
+    public:
         Uniform(const Uniform&) = delete;
         Uniform& operator=(const Uniform&) = delete;
 
-        Uniform(Uniform&& other): m_prog(other.m_prog), m_value(std::move(other.m_value)), m_uId(other.m_uId) {
-            other.m_uId = 0;
+        Uniform(Uniform&& other): m_prog(other.m_prog), m_value(std::move(other.m_value)), m_uniformId(other.m_uniformId) {
+            other.m_uniformId = 0;
             other.m_prog = nullptr;
         };
         Uniform& operator=(Uniform& other) noexcept {
             if (this != &other) {
-                std::swap(m_uId, other.m_uId);
+                std::swap(m_uniformId, other.m_uniformId);
                 std::swap(m_value, other.m_value);
                 std::swap(m_prog, other.m_prog);
             }
@@ -74,7 +77,7 @@ namespace gl
     private:
 
         T m_value;
-        GLint m_uId;
+        GLint m_uniformId;
         const Program* m_prog;
     };
 }
