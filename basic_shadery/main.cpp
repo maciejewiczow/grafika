@@ -12,12 +12,14 @@
 #include "Program.h"
 #include "Uniform.h"
 #include "FirstPersonControls.h"
+#include "Texture.h"
 
 using Vec3f = glm::tvec3<GLfloat>;
 
 struct Vertex {
     Vec3f position;
     Vec3f color;
+    glm::tvec2<GLfloat> texCoord;
 };
 
 constexpr double pi = 3.141592653589793238462643383279502884;
@@ -44,7 +46,7 @@ int main() {
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         std::cerr << "GLEW Initalization failed\n";
-        return 0;
+        return -1;
     }
 
     glEnable(GL_DEPTH_TEST);
@@ -61,24 +63,24 @@ int main() {
 
     gl::Shader vertexShader;
     try {
-        vertexShader = gl::Shader::fromFile("stripes.vert.glsl", gl::ShaderType::Vertex);
+        vertexShader = gl::Shader::fromFile("assets/shaders/textured.vert.glsl", gl::ShaderType::Vertex);
         vertexShader.compile();
 
         std::cout << "Vertex shader compilation OK\n";
     } catch (gl::shader_exception& e) {
         std::cerr << "Vertex shader compilation failed:\n" << e.what() << std::endl;
-        return 0;
+        return -1;
     }
 
     gl::Shader fragmentShader;
     try {
-        fragmentShader = gl::Shader::fromFile("stripes.frag.glsl", gl::ShaderType::Fragment);
+        fragmentShader = gl::Shader::fromFile("assets/shaders/textured.frag.glsl", gl::ShaderType::Fragment);
         fragmentShader.compile();
 
         std::cout << "Fragment shader compilation OK\n";
     } catch (gl::shader_exception& e) {
         std::cerr << "Fragment shader compilation failed:\n" << e.what() << std::endl;
-        return 0;
+        return -1;
     }
 
     // Zlinkowanie obu shaderów w jeden wspólny program
@@ -91,7 +93,22 @@ int main() {
             .bind();
     } catch (gl::program_link_exception& e) {
         std::cerr << "Program linking failed!\n" << e.what() << "\n";
-        return 0;
+        return -1;
+    }
+
+    gl::Texture korwin_tex;
+    try {
+        korwin_tex.loadImage("assets/textures/korwinium.jpg")
+            .bind()
+            .setWrapping(gl::Texture::Wrap::Repeat)
+            .setMinFilter(gl::Texture::MinFilter::Nearest)
+            .setMagFilter(gl::Texture::MagFilter::Nearest)
+            .upload();
+
+        std::cout << "Texture loading OK\n";
+    } catch (gl::image_load_exception& e) {
+        std::cerr << "Failed to load the korwinium texture!\n" << e.what() << "\n";
+        return -1;
     }
 
     // Specifikacja formatu danych wierzchołkowych
@@ -103,37 +120,34 @@ int main() {
     glEnableVertexAttribArray(colAttrib);
     glVertexAttribPointer(colAttrib, sizeof(Vertex::color)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
 
+    GLint texPosAttrib = prog.getAttributeLocation("texCoord");
+    glEnableVertexAttribArray(texPosAttrib);
+    glVertexAttribPointer(texPosAttrib, sizeof(Vertex::color)/sizeof(GLfloat), GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoord));
+
     std::vector<Vertex> vertices{
-        // back quad
-        {{-1.f,  1.f, -1.f}, { .0f, 1.0f,  .0f}},  // top left
-        {{ 1.f,  1.f, -1.f}, { .0f, 1.0f, 1.0f}},  // top right
-        {{ 1.f, -1.f, -1.f}, { .0f,  .0f, 1.0f}},  // bottom right
-        {{-1.f, -1.f, -1.f}, { .0f,  .0f,  .0f}},  // bottom left
-        // front quad
-        {{-1.f,  1.f,  1.f}, {1.0f, 1.0f,  .0f}},
-        {{ 1.f,  1.f,  1.f}, {1.0f, 1.0f, 1.0f}},
-        {{ 1.f, -1.f,  1.f}, {1.0f,  .0f, 1.0f}},
-        {{-1.f, -1.f,  1.f}, {1.0f,  .0f,  .0f}},
+        // base
+        {{-1.f, -.5f, -1.f}, { .0f, 1.0f,  .0f}, { 1.f/3.f, 1.f/3.f }},  // back left
+        {{ 1.f, -.5f, -1.f}, { .0f, 1.0f, 1.0f}, { 2.f/3.f, 1.f/3.f }},  // back right
+        {{ 1.f, -.5f,  1.f}, { .0f,  .0f, 1.0f}, { 2.f/3.f, 2.f/3.f }},  // front right
+        {{-1.f, -.5f,  1.f}, { .0f,  .0f,  .0f}, { 1.f/3.f, 2.f/3.f }},  // front left
+        // top - 4 verts with different tex coords
+        {{ .0f, 1.f,  .0f}, { 1.f,  1.f,  .0f}, { .5f, 1.f }}, // front
+        {{ .0f, 1.f,  .0f}, { 1.f,  1.f,  .0f}, { 1.f, .5f }}, // right
+        {{ .0f, 1.f,  .0f}, { 1.f,  1.f,  .0f}, { .5f, .0f }}, // back
+        {{ .0f, 1.f,  .0f}, { 1.f,  1.f,  .0f}, { .0f, .5f }}, // left
     };
     std::vector<GLuint> indices{
-        // back
+        // bottom
         0, 1, 2,
         0, 2, 3,
         // front
-        4, 5, 6,
-        4, 6, 7,
-        // left
-        0, 4, 7,
-        0, 3, 7,
+        2, 3, 4,
         // right
-        1, 5, 6,
-        1, 2, 6,
-        // top
-        0, 1, 5,
-        0, 4, 5,
-        // bottom
-        2, 3, 7,
-        2, 6, 7,
+        1, 2, 5,
+        // back
+        0, 1, 6,
+        // left
+        0, 3, 7,
     };
 
     glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
@@ -142,14 +156,12 @@ int main() {
     auto model = prog.createUniform<glm::mat4>("model");
     auto view = prog.createUniform<glm::mat4>("view");
     auto projection = prog.createUniform<glm::mat4>("projection");
-    auto time = prog.createUniform<GLfloat>("time", .0f);
-    auto stripesDirection = prog.createUniform<glm::vec3>("stripes_dir", glm::normalize(glm::vec3{ 2.f, -1.f, 1.5f }));
 
     float scale = 5.f;
     model = glm::scale(glm::mat4{ 1.0f }, { scale, scale, scale });
 
     gl::PerspectiveCamera camera{ (float) pi/3, resolution, 0.05f, 100.0f };
-    camera.setPosition({ -13.f, 15.f, -12.f });
+    camera.setPosition({ -2.f, 15.f, 13.f });
     camera.lookAt({ .0f, .0f, .0f });
 
     gl::FirstPersonControls controls{ camera, window };
@@ -163,7 +175,7 @@ int main() {
     sf::Clock clock;
     sf::Time timeStep;
 
-    const char* titleBase = "OpenGL - ";
+    const char* titleBase = "Korwinium (OpenGL) - ";
 
     while (running) {
         timeStep = clock.getElapsedTime();
@@ -198,6 +210,8 @@ int main() {
         window.display();
 
         auto stepUs = timeStep.asMicroseconds();
+
+        model = glm::rotate(model.value(), 0.0000012f*stepUs, { .0f, 1.f, .0f });
         if (stepUs > 0) {
             std::string title{ titleBase };
             title += std::to_string(1000000/stepUs);
@@ -206,12 +220,12 @@ int main() {
             title += "us/frame)";
             window.setTitle(title);
         }
-        time += 0.0000004f * stepUs;
     }
     // Kasowanie programu i czyszczenie buforów
     glDeleteBuffers(1, &vbo);
 
     // Zamknięcie okna renderingu
     window.close();
+
     return 0;
 }
