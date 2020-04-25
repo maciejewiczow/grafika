@@ -17,6 +17,30 @@ namespace gl
         Fragment = GL_FRAGMENT_SHADER
     };
 
+    class shader_exception : public exception {
+        using super = exception;
+    public:
+        shader_exception(): super() {}
+        shader_exception(const char* message): super(message) {}
+        shader_exception(const char* message, int code): super(message, code) {}
+    };
+
+    class shader_compile_exception : public shader_exception {
+        using super = shader_exception;
+
+        string message;
+
+    public:
+        shader_compile_exception(): message(), super() {}
+        shader_compile_exception(std::string& mess): message(std::move(mess)), super(mess.c_str()) {}
+        shader_compile_exception(const char* message): message(message), super(message) {}
+        shader_compile_exception(const char* message, int code): message(message), super(message, code) {}
+
+        const char* what() {
+            return message.c_str();
+        }
+    };
+
     class Shader {
     public:
         static Shader fromSource(const GLchar* m_source, ShaderType m_type) {

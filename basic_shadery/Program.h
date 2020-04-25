@@ -10,6 +10,21 @@ namespace gl
     template<typename T>
     class Uniform;
 
+    class program_link_exception : public exception {
+        using super = exception;
+        string message;
+
+    public:
+        program_link_exception(): message(), super() {}
+        program_link_exception(std::string& mess): message(std::move(mess)), super(mess.c_str()) {}
+        program_link_exception(const char* message): message(message), super(message) {}
+        program_link_exception(const char* message, int code): message(message), super(message, code) {}
+
+        const char* what() {
+            return message.c_str();
+        }
+    };
+
     class Program {
     public:
         Program(): m_programId(glCreateProgram()) {};
