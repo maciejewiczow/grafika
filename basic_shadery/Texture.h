@@ -59,6 +59,35 @@ namespace gl
             loadImage(filename);
         }
 
+        Texture(const Texture&) = delete;
+        Texture& operator=(const Texture&) = delete;
+
+        Texture(Texture&& other) noexcept:
+            m_texId(0),
+            width(0),
+            height(0),
+            channels(0),
+            data(nullptr)
+        {
+            std::swap(m_texId, other.m_texId);
+            std::swap(width, other.width);
+            std::swap(height, other.height);
+            std::swap(channels, other.channels);
+            std::swap(data, other.data);
+        }
+
+        Texture& operator=(Texture& other) noexcept {
+            if (this != &other) {
+                m_texId = std::exchange(other.m_texId, 0);
+                data = std::exchange(other.data, nullptr);
+
+                width = other.width;
+                height = other.height;
+                channels = other.channels;
+            }
+            return *this;
+        }
+
         Texture& bind() {
             glBindTexture(GL_TEXTURE_2D, m_texId);
             return *this;
