@@ -41,21 +41,19 @@ void gl::FirstPersonControls::centerMouse() {
 inline void gl::FirstPersonControls::updatePosition(float timeStep) {
     float timeMoveSpeed = moveSpeed * timeStep;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        m_camera.m_position.x += m_camera.m_direction.x * timeMoveSpeed;
-        m_camera.m_position.z += m_camera.m_direction.z * timeMoveSpeed;
+        m_camera.m_position += glm::normalize(glm::vec3{ m_camera.m_direction.x, .0f,  m_camera.m_direction.z }) * timeMoveSpeed;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        m_camera.m_position.x -= m_camera.m_direction.x * timeMoveSpeed;
-        m_camera.m_position.z -= m_camera.m_direction.z * timeMoveSpeed;
+        m_camera.m_position -= glm::normalize(glm::vec3{ m_camera.m_direction.x, .0f,  m_camera.m_direction.z }) * timeMoveSpeed;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        m_camera.m_position -= glm::cross(m_camera.m_direction, m_camera.m_up) * timeMoveSpeed;
+        m_camera.m_position -= glm::normalize(glm::cross(m_camera.m_direction, m_camera.m_up)) * timeMoveSpeed;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        m_camera.m_position += glm::cross(m_camera.m_direction, m_camera.m_up) * timeMoveSpeed;
+        m_camera.m_position += glm::normalize(glm::cross(m_camera.m_direction, m_camera.m_up)) * timeMoveSpeed;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::RShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
@@ -86,8 +84,8 @@ void gl::FirstPersonControls::updateDirection(float timeStep) {
 
     centerMouse();
 
-    m_yaw += static_cast<float>(xoffset)* lookSpeed* timeStep;
-    m_pitch = glm::clamp(m_pitch + static_cast<float>(yoffset)* lookSpeed* timeStep, -89.f, 89.f);
+    m_yaw += static_cast<float>(xoffset) * lookSpeed * timeStep;
+    m_pitch = glm::clamp(m_pitch + static_cast<float>(yoffset) * lookSpeed * timeStep, -89.f, 89.f);
 
     m_camera.m_direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     m_camera.m_direction.y = sin(glm::radians(m_pitch));
